@@ -343,4 +343,4 @@ def setup_custom_fields():
 		],
 	}
 
-	create_custom_fields(custom_fields)
+	create_custom_fields(custom_fields, ignore_validate=True)
