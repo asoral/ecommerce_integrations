@@ -40,6 +40,32 @@ frappe.ui.form.on("Shopify Setting", {
 		});
 	},
 
+	authorize_shopify: function (frm) {
+		if (!frm.doc.client_id || !frm.doc.shopify_url) {
+			frappe.msgprint(__("Please enter Shop URL and Client ID first."));
+			return;
+		}
+
+		frappe.run_serially([
+			() => frm.save(),
+			() => {
+				let shop_url = frm.doc.shopify_url.replace("https://", "");
+				let client_id = frm.doc.client_id;
+				let base_url = window.location.origin;
+				let redirect_uri = encodeURIComponent(base_url + "/api/method/ecommerce_integrations.shopify.oauth.callback");
+				
+				let scopes = "read_orders,write_orders,read_products,write_products,read_inventory,write_inventory,read_locations,read_fulfillments,write_fulfillments,read_customers,write_customers,read_third_party_fulfillment_orders,write_third_party_fulfillment_orders,write_shipping";
+
+				let oauth_url = `https://${shop_url}/admin/oauth/authorize?client_id=${client_id}&scope=${scopes}&redirect_uri=${redirect_uri}`;
+				
+				window.location.href = oauth_url;
+			}
+		]).catch((err) => {
+			frappe.msgprint(__("Failed to save the form before redirecting. Please check for validation errors."));
+			console.error(err);
+		});
+	},
+
 	refresh: function (frm) {
 		frm.add_custom_button(__("Import Products"), function () {
 			frappe.set_route("shopify-import-products");

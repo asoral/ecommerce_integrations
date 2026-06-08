@@ -56,13 +56,22 @@ class ShopifySetting(SettingController):
 
 	def _handle_webhooks(self):
 		if self.is_enabled():
-			new_webhooks = connection.register_webhooks(self.shopify_url, self.get_password("password"))
+			password = self.get_password("password", raise_exception=False)
+			if not password and self.app_type == "Partner App (OAuth)":
+				# Skip webhook registration until we get the token
+				return
+
+			new_webhooks = connection.register_webhooks(self.shopify_url, password)
 
 			if not new_webhooks:
-				msg = _("Failed to register webhooks with Shopify.") + "<br>"
-				msg += _("Please check credentials and retry.") + " "
-				msg += _("Disabling and re-enabling the integration might also help.")
-				frappe.throw(msg)
+				host = frappe.request.host if frappe.request else ""
+				if "127.0.0.1" in host or "localhost" in host:
+					frappe.msgprint(_("Warning: Webhooks could not be registered because you are on a local domain. Real-time sync will not work unless you use ngrok or similar."))
+				else:
+					msg = _("Failed to register webhooks with Shopify.") + "<br>"
+					msg += _("Please check credentials and retry.") + " "
+					msg += _("Disabling and re-enabling the integration might also help.")
+					frappe.throw(msg)
 
 			for webhook in new_webhooks:
 				self.append(

@@ -28,10 +28,14 @@ def temp_shopify_session(func):
 
 		setting = frappe.get_doc(SETTING_DOCTYPE)
 		if setting.is_enabled():
+			password = setting.get_password("password", raise_exception=False)
+			if not password:
+				frappe.throw(_("Shopify is not authorized. Please Authorize via OAuth or enter an Access Token first."))
+
 			auth_details = (
 				setting.shopify_url,
 				API_VERSION,
-				setting.get_password("password"),
+				password,
 			)
 
 			with Session.temp(*auth_details):

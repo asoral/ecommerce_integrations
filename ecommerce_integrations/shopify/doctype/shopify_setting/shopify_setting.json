@@ -9,6 +9,9 @@
   "column_break_4",
   "section_break_2",
   "shopify_url",
+  "app_type",
+  "client_id",
+  "authorize_shopify",
   "column_break_3",
   "password",
   "shared_secret",
@@ -85,19 +88,41 @@
    "mandatory_depends_on": "eval:doc.enable_shopify"
   },
   {
+   "fieldname": "app_type",
+   "fieldtype": "Select",
+   "label": "App Type",
+   "options": "Custom App (Admin API)\nPartner App (OAuth)",
+   "default": "Custom App (Admin API)",
+   "mandatory_depends_on": "eval:doc.enable_shopify"
+  },
+  {
+   "fieldname": "client_id",
+   "fieldtype": "Data",
+   "label": "Client ID",
+   "depends_on": "eval:doc.app_type=='Partner App (OAuth)'",
+   "mandatory_depends_on": "eval:doc.app_type=='Partner App (OAuth)' && doc.enable_shopify"
+  },
+  {
+   "fieldname": "authorize_shopify",
+   "fieldtype": "Button",
+   "label": "Authorize Shopify",
+   "depends_on": "eval:doc.app_type=='Partner App (OAuth)' && doc.client_id"
+  },
+  {
    "fieldname": "column_break_3",
    "fieldtype": "Column Break"
   },
   {
    "fieldname": "password",
    "fieldtype": "Password",
-   "label": "Password / Access Token",
-   "mandatory_depends_on": "eval:doc.enable_shopify"
+   "label": "Access Token / Password",
+   "mandatory_depends_on": "eval:doc.enable_shopify && doc.app_type == 'Custom App (Admin API)'",
+   "read_only_depends_on": "eval:doc.app_type=='Partner App (OAuth)'"
   },
   {
    "fieldname": "shared_secret",
    "fieldtype": "Data",
-   "label": "Shared secret / API Secret",
+   "label": "Client Secret / API Secret",
    "mandatory_depends_on": "eval:doc.enable_shopify"
   },
   {
