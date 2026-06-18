@@ -23,7 +23,11 @@ class ShopifyCustomer(EcommerceCustomer):
 		customer_name = cstr(customer.get("first_name")) + " " + cstr(customer.get("last_name"))
 		if len(customer_name.strip()) == 0:
 			customer_name = customer.get("email")
+		
 		customer_group = self.setting.customer_group
+		if customer_group and frappe.db.get_value("Customer Group", customer_group, "is_group"):
+			customer_group = frappe.db.get_value("Customer Group", {"is_group": 0})
+
 		super().sync_customer(customer_name, customer_group)
 		billing_address = customer.get("billing_address") or customer.get("defaultAddress") or customer.get("default_address") or {}
 		shipping_address = customer.get("shipping_address") or {}
@@ -111,6 +115,13 @@ class ShopifyCustomer(EcommerceCustomer):
 
 def _map_address_fields(shopify_address, customer_name, address_type, email):
 	"""returns dict with shopify address fields mapped to equivalent ERPNext fields"""
+	state = shopify_address.get("province")
+	country = shopify_address.get("country")
+
+	# ERPNext mandates state for Indian addresses
+	if country == "India" and not state:
+		state = shopify_address.get("city") or "Unassigned State"
+
 	address_fields = {
 		"address_title": customer_name,
 		"address_type": address_type,
@@ -118,9 +129,9 @@ def _map_address_fields(shopify_address, customer_name, address_type, email):
 		"address_line1": shopify_address.get("address1") or "Address 1",
 		"address_line2": shopify_address.get("address2"),
 		"city": shopify_address.get("city"),
-		"state": shopify_address.get("province"),
+		"state": state,
 		"pincode": shopify_address.get("zip"),
-		"country": shopify_address.get("country"),
+		"country": country,
 		"email_id": email,
 	}
 

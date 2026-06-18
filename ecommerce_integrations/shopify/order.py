@@ -265,7 +265,7 @@ def get_order_taxes(shopify_order, setting, items):
 			taxes.append(
 				{
 					"charge_type": "Actual",
-					"account_head": get_tax_account_head(tax, charge_type="sales_tax"),
+					"account_head": get_tax_account_head(tax, charge_type="sales_tax", setting=setting),
 					"description": (
 						get_tax_account_description(tax)
 						or f"{tax.get('title')} - {flt(tax.get('rate')) * 100.0:.2f}%"
@@ -331,7 +331,7 @@ def get_order_taxes(shopify_order, setting, items):
 	return normalized
 
 
-def get_tax_account_head(tax, charge_type: Literal["shipping", "sales_tax"] | None = None):
+def get_tax_account_head(tax, charge_type: Literal["shipping", "sales_tax"] | None = None, setting=None):
 	tax_title = str(tax.get("title"))
 
 	tax_account = frappe.db.get_value(
@@ -342,6 +342,13 @@ def get_tax_account_head(tax, charge_type: Literal["shipping", "sales_tax"] | No
 
 	if not tax_account and charge_type:
 		tax_account = frappe.db.get_single_value(SETTING_DOCTYPE, DEFAULT_TAX_FIELDS[charge_type])
+
+	if not tax_account and setting:
+		tax_account = frappe.db.get_value("Account", {"account_type": ["in", ["Tax", "Chargeable", "Expense Account", "Income Account"]], "company": setting.company, "is_group": 0})
+		
+		# Absolute fallback to ANY non-group account if they have no tax accounts
+		if not tax_account:
+			tax_account = frappe.db.get_value("Account", {"company": setting.company, "is_group": 0})
 
 	if not tax_account:
 		frappe.throw(_("Tax Account not specified for Shopify Tax {0}").format(tax.get("title")))
@@ -392,7 +399,7 @@ def update_taxes_with_shipping_lines(taxes, shipping_lines, setting, items, taxe
 				taxes.append(
 					{
 						"charge_type": "Actual",
-						"account_head": get_tax_account_head(shipping_charge, charge_type="shipping"),
+						"account_head": get_tax_account_head(shipping_charge, charge_type="shipping", setting=setting),
 						"description": get_tax_account_description(shipping_charge)
 						or shipping_charge["title"],
 						"tax_amount": shipping_charge_amount,
@@ -404,7 +411,7 @@ def update_taxes_with_shipping_lines(taxes, shipping_lines, setting, items, taxe
 			taxes.append(
 				{
 					"charge_type": "Actual",
-					"account_head": get_tax_account_head(tax, charge_type="sales_tax"),
+					"account_head": get_tax_account_head(tax, charge_type="sales_tax", setting=setting),
 					"description": (
 						get_tax_account_description(tax)
 						or f"{tax.get('title')} - {tax.get('rate') * 100.0:.2f}%"
