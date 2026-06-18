@@ -147,7 +147,11 @@ def get_order_items(order_items, setting, delivery_date, taxes_inclusive):
 	product_not_exists = []
 
 	for shopify_item in order_items:
-		if not shopify_item.get("product_exists"):
+		product_exists = shopify_item.get("product_exists")
+		if product_exists is None:
+			product_exists = bool(shopify_item.get("product_id"))
+
+		if not product_exists:
 			all_product_exists = False
 			product_not_exists.append(
 				{

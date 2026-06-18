@@ -25,8 +25,8 @@ class ShopifyCustomer(EcommerceCustomer):
 			customer_name = customer.get("email")
 		customer_group = self.setting.customer_group
 		super().sync_customer(customer_name, customer_group)
-		billing_address = customer.get("billing_address", {}) or customer.get("defaultAddress")
-		shipping_address = customer.get("shipping_address", {})
+		billing_address = customer.get("billing_address") or customer.get("defaultAddress") or customer.get("default_address") or {}
+		shipping_address = customer.get("shipping_address") or {}
 
 		if billing_address:
 			self.create_customer_address(
@@ -57,8 +57,8 @@ class ShopifyCustomer(EcommerceCustomer):
 		super().create_customer_address(address_fields)
 
 	def update_existing_addresses(self, customer):
-		billing_address = customer.get("billing_address", {}) or customer.get("defaultAddress")
-		shipping_address = customer.get("shipping_address", {})
+		billing_address = customer.get("billing_address") or customer.get("defaultAddress") or customer.get("default_address") or {}
+		shipping_address = customer.get("shipping_address") or {}
 		customer_name = cstr(customer.get("first_name")) + " " + cstr(customer.get("last_name"))
 		email = customer.get("email")
 		if billing_address:
@@ -129,3 +129,21 @@ def _map_address_fields(shopify_address, customer_name, address_type, email):
 		address_fields["phone"] = phone
 
 	return address_fields
+
+def sync_customer_webhook(payload, request_id=None):
+	from ecommerce_integrations.shopify.utils import create_shopify_log
+	frappe.set_user("Administrator")
+	frappe.flags.request_id = request_id
+
+	try:
+		customer_id = payload.get("id")
+		if customer_id:
+			customer = ShopifyCustomer(customer_id=customer_id)
+			if not customer.is_synced():
+				customer.sync_customer(customer=payload)
+			else:
+				customer.update_existing_addresses(payload)
+	except Exception as e:
+		create_shopify_log(status="Error", exception=e, rollback=True)
+	else:
+		create_shopify_log(status="Success")

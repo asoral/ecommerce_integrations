@@ -17,6 +17,8 @@ WEBHOOK_EVENTS = [
 	"PRODUCTS_CREATE",
 	"RETURNS_APPROVE",
 	"REFUNDS_CREATE",
+	"CUSTOMERS_CREATE",
+	"CUSTOMERS_UPDATE",
 ]
 
 EVENT_MAPPER = {
@@ -28,6 +30,8 @@ EVENT_MAPPER = {
 	"products/create": "ecommerce_integrations.shopify.product.create_item",
 	"returns/approve": "ecommerce_integrations.shopify.return.process_shopify_return",
 	"refunds/create": "ecommerce_integrations.shopify.return.process_invoice_return",
+	"customers/create": "ecommerce_integrations.shopify.customer.sync_customer_webhook",
+	"customers/update": "ecommerce_integrations.shopify.customer.sync_customer_webhook",
 }
 
 # custom fields
