@@ -527,6 +527,7 @@ def sync_old_orders():
 
 	shopify_setting = frappe.get_doc(SETTING_DOCTYPE)
 	shopify_setting.sync_old_orders = 0
+	shopify_setting.save(ignore_permissions=True)
 
 
 def _fetch_old_orders(from_time, to_time, limit=50):
@@ -751,7 +752,7 @@ def _fetch_old_orders(from_time, to_time, limit=50):
     }
     """
 
-	search_query = f'createdAt:>="{from_time}" AND createdAt:<="{to_time}"'
+	search_query = f'created_at:>="{from_time}" AND created_at:<="{to_time}"'
 
 	cursor = None
 	has_next_page = True

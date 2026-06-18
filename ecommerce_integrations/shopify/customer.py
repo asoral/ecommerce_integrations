@@ -138,7 +138,8 @@ def sync_customer_webhook(payload, request_id=None):
 	try:
 		customer_id = payload.get("id")
 		if customer_id:
-			customer = ShopifyCustomer(customer_id=customer_id)
+			customer_id_str = str(customer_id)
+			customer = ShopifyCustomer(customer_id=customer_id_str)
 			if not customer.is_synced():
 				customer.sync_customer(customer=payload)
 			else:
