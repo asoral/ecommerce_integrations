@@ -1211,8 +1211,14 @@ def map_erpnext_item_to_shopify(erpnext_item, shopify_product=None):
 
 			if erpnext_item.weight_per_unit:
 				uom = get_shopify_weight_uom(erpnext_item.weight_uom)
-				variant["weight"] = erpnext_item.weight_per_unit
-				variant["weightUnit"] = uom
+				variant["inventoryItem"] = {
+					"measurement": {
+						"weight": {
+							"value": flt(erpnext_item.weight_per_unit),
+							"unit": uom,
+						}
+					}
+				}
 
 			default_warehouse = frappe.db.get_single_value("Shopify Setting", "warehouse")
 			shopify_location_id = get_shopify_location_id(default_warehouse)
@@ -1240,8 +1246,14 @@ def map_erpnext_item_to_shopify(erpnext_item, shopify_product=None):
 
 		if erpnext_item.weight_per_unit:
 			uom = get_shopify_weight_uom(erpnext_item.weight_uom)
-			base_variant["weight"] = erpnext_item.weight_per_unit
-			base_variant["weightUnit"] = uom
+			base_variant["inventoryItem"] = {
+				"measurement": {
+					"weight": {
+						"value": flt(erpnext_item.weight_per_unit),
+						"unit": uom,
+					}
+				}
+			}
 
 		default_warehouse = frappe.db.get_single_value("Shopify Setting", "warehouse")
 		shopify_location_id = get_shopify_location_id(default_warehouse)
