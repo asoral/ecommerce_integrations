@@ -1142,15 +1142,18 @@ def map_erpnext_item_to_shopify(erpnext_item, shopify_product=None):
 		"productType": erpnext_item.item_group or "All Item Groups",
 		"vendor": erpnext_item.brand or "Default Vendor",
 		"status": "DRAFT" if erpnext_item.disabled else "ACTIVE",
-		"metafields": [
+		"metafields": [],
+	}
+	
+	if erpnext_item.gst_hsn_code:
+		product_data["metafields"].append(
 			{
 				"namespace": "custom",
 				"key": "hsn_code",
-				"value": str(erpnext_item.gst_hsn_code or ""),
+				"value": str(erpnext_item.gst_hsn_code),
 				"type": "number_integer",
 			}
-		],
-	}
+		)
 
 	# ---- Detect Variant Attributes ----
 	attributes = getattr(erpnext_item, "attributes", [])
