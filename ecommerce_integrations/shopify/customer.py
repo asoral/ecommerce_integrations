@@ -1,7 +1,10 @@
 from typing import Any
 
+# pyrefly: ignore [missing-import]
 import frappe
+# pyrefly: ignore [missing-import]
 from frappe import _
+# pyrefly: ignore [missing-import]
 from frappe.utils import cstr, validate_phone_number
 
 from ecommerce_integrations.controllers.customer import EcommerceCustomer

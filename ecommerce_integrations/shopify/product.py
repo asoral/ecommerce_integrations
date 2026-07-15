@@ -1,10 +1,15 @@
 import json
 from typing import Optional
 
+# pyrefly: ignore [missing-import]
 import frappe
+# pyrefly: ignore [missing-import]
 from frappe import _, msgprint
+# pyrefly: ignore [missing-import]
 from frappe.utils import cint, cstr, flt
+# pyrefly: ignore [missing-import]
 from frappe.utils.nestedset import get_root_of
+# pyrefly: ignore [missing-import]
 from shopify import GraphQL
 
 from ecommerce_integrations.ecommerce_integrations.doctype.ecommerce_item import (
@@ -678,6 +683,7 @@ def shopify_graphql_product_mutation(action: str, product_data: dict) -> dict:
 
 	import json
 
+	# pyrefly: ignore [missing-import]
 	from shopify import GraphQL
 
 	# --- Key fixes for productSet mutation ---
@@ -792,6 +798,9 @@ def shopify_graphql_product_mutation(action: str, product_data: dict) -> dict:
 
 	product = result.get("product", {})
 	if not product:
+		if user_errors:
+			msgs = ", ".join([ue.get("message", str(ue)) for ue in user_errors])
+			frappe.throw(_(f"Shopify {action} failed: {msgs}"))
 		frappe.throw(_(f"No product returned from Shopify after {action}"))
 
 	normalized = {
